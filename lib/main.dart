@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+// TODO: Step 2 - Import the rFlutter _Alert package here.
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'quiz_brain.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() => runApp(Quizzler());
 
@@ -27,19 +32,37 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   List<Widget> scoreKeeper = [];
 
-  List<String> questions = [
-    'Karol Gil tiene 25 anos',
-    'Andres es un nombre bonito',
-    'Colombia, queda en suramerica'
-  ];
+  void checkAnswer(bool userPickedAnswer) {
+    bool correctAnswer = quizBrain.getQuestionAnswer();
 
-  List<bool> answers = [
-    false,
-    true,
-    true
-  ]
-
-  int questionTracker = 0;
+    setState(() {
+      bool endOfQuiz = quizBrain.isFinished();
+      if (endOfQuiz) {
+        Alert(
+                context: context,
+                title: "RFLUTTER",
+                desc: "You have finished the quiz")
+            .show();
+        quizBrain.reset();
+        scoreKeeper = [];
+      } else {
+        if (userPickedAnswer == correctAnswer) {
+          scoreKeeper.add(Icon(
+            Icons.check,
+            color: Colors.green,
+          ));
+          print('user got it right');
+        } else {
+          scoreKeeper.add(Icon(
+            Icons.check,
+            color: Colors.red,
+          ));
+          print('user got it wrong!');
+        }
+        quizBrain.nextQuestion();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +76,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                questions[questionTracker],
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -70,20 +93,14 @@ class _QuizPageState extends State<QuizPage> {
               textColor: Colors.white,
               color: Colors.green,
               child: Text(
-                'True',
+                'Cierto',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20.0,
                 ),
               ),
               onPressed: () {
-                setState(() {
-                  scoreKeeper.add(Icon(
-                    Icons.check,
-                    color: Colors.green,
-                  ));
-                  questionTracker++;
-                });
+                checkAnswer(true);
               },
             ),
           ),
@@ -94,23 +111,14 @@ class _QuizPageState extends State<QuizPage> {
             child: FlatButton(
               color: Colors.red,
               child: Text(
-                'False',
+                'Falso',
                 style: TextStyle(
                   fontSize: 20.0,
                   color: Colors.white,
                 ),
               ),
               onPressed: () {
-                setState(() {
-                  scoreKeeper.add(Icon(
-                    Icons.check,
-                    color: Colors.red,
-                  ));
-                  questionTracker++;
-                  if (questionTracker == 2) {
-                    questionTracker = 0;
-                  }
-                });
+                checkAnswer(false);
               },
             ),
           ),
@@ -122,9 +130,3 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
-
-/*
-question 1: 'Karol Gil tiene 25 anos', false;
-question 2: 'Andres es un nombre bonito', true,
-question 3: 'Colombia queda en suramerica', true,
- */
